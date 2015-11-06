@@ -3,4 +3,9 @@
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="title_activity_fitness_main">FitnessMainActivity</string>
+    <string name="section_format">Hello World from section: %1$d</string>
+    <string name="fitnesstracker">Fitness Tracker</string>
+    <string name="fitnessfiles">Fitness Files</string>
+    <string name="fitnesschart">Fitness Chart</string>
 </resources>
