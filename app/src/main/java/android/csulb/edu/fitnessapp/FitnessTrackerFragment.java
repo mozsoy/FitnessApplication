@@ -1,12 +1,17 @@
 package android.csulb.edu.fitnessapp;
 
 import android.app.Activity;
-import android.net.Uri;
+import android.app.FragmentManager;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 
 /**
@@ -64,7 +69,7 @@ public class FitnessTrackerFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_fitness_tracker, container, false);
+        return inflater.from(getActivity()).inflate(R.layout.fragment_fitness_tracker, container, false);
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -88,7 +93,7 @@ public class FitnessTrackerFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
+        //mListener = null;
     }
 
     /**
@@ -104,5 +109,4 @@ public class FitnessTrackerFragment extends Fragment {
     public interface OnFitnessTrackerListener {
         public void onFitnessTrackerInteraction(String text);
     }
-
 }

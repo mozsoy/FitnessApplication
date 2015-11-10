@@ -16,7 +16,15 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import android.widget.Button;
 import android.widget.TextView;
+
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 public class FitnessMainActivity extends Activity implements ActionBar.TabListener, FitnessTrackerFragment.OnFitnessTrackerListener,
     FitnessChartFragment.OnFitnessChartListener, FitnessFilesFragment.OnFitnessFileListener{
@@ -35,6 +43,8 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
      * The {@link ViewPager} that will host the section contents.
      */
     private ViewPager mViewPager;
+    private GoogleMap map;
+    GPSTracker gps;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -173,5 +183,42 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
             }
             return null;
         }
+    }
+
+    public void onButtonStartStopClick(View v) {
+        Button btn = (Button) findViewById(R.id.btnStartStop);
+
+        if(btn.getText().toString().compareTo("Start") == 0) {
+            btn.setText("Stop");
+            LatLng CURRENT_LOCATION = getGPSLocation();
+            setCurrentLocation(CURRENT_LOCATION);
+        }
+        else {
+            btn.setText("Start");
+        }
+    }
+
+    private LatLng getGPSLocation() {
+        gps = new GPSTracker(this);
+
+        if(gps.canGetLocation()) {
+            double latitude = gps.getLatitude();
+            double longitude = gps.getLongitude();
+            LatLng location = new LatLng(latitude, longitude);
+
+            return location;
+        }
+        else {
+            gps.showSettingsAlert();
+            return null;
+        }
+    }
+
+    private void setCurrentLocation(LatLng CURRENT_LOCATION) {
+        map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
+        map.addMarker(new MarkerOptions().position(CURRENT_LOCATION).title("Start"));
+        map.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
+        CameraUpdate update = CameraUpdateFactory.newLatLngZoom(CURRENT_LOCATION, 16);
+        map.animateCamera(update);
     }
 }
