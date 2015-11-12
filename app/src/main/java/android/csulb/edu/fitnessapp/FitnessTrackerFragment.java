@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.FragmentManager;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.view.InflateException;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,7 +34,7 @@ public class FitnessTrackerFragment extends Fragment {
     private String mParam2;
 
     private OnFitnessTrackerListener mListener;
-
+    View root = null;
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
@@ -69,7 +70,18 @@ public class FitnessTrackerFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.from(getActivity()).inflate(R.layout.fragment_fitness_tracker, container, false);
+        if(root != null) {
+            ViewGroup parent = (ViewGroup) root.getParent();
+            if(parent != null) {
+                parent.removeView(root);
+            }
+        }
+        try {
+            root = inflater.from(getActivity()).inflate(R.layout.fragment_fitness_tracker, container, false);
+        } catch (InflateException e) {
+
+        }
+        return root;
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -93,7 +105,7 @@ public class FitnessTrackerFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        //mListener = null;
+        mListener = null;
     }
 
     /**
