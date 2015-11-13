@@ -175,7 +175,7 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
                 return FitnessTrackerFragment.newInstance("test", "test");
             }
             else if(position == 1) {
-                return FitnessChartFragment.newInstance("test", "test");
+                return FitnessChartFragment.newInstance("test", "test", "test");
             }
             else {
                 return FitnessFilesFragment.newInstance("test", "test");
