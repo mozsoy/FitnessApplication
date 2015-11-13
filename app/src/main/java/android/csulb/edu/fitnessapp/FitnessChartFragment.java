@@ -1,11 +1,20 @@
 package android.csulb.edu.fitnessapp;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+
+import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.LegendRenderer;
+import com.jjoe64.graphview.ValueDependentColor;
+import com.jjoe64.graphview.series.BarGraphSeries;
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.LineGraphSeries;
 
 
 /**
@@ -19,12 +28,16 @@ import android.view.ViewGroup;
 public class FitnessChartFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private static final String TIME = "Time";
+    private static final String DISTANCE = "Distance";
+    private static final String CALORIES = "Calories";
+    private GraphView graphCalories;
+    private GraphView graphDistance;
 
     // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private String mTime;
+    private String mDistance;
+    private String mCalories;
 
     private OnFitnessChartListener mListener;
 
@@ -34,14 +47,16 @@ public class FitnessChartFragment extends Fragment {
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
+     * @param param3 Parameter 3.
      * @return A new instance of fragment FitnessChartFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static FitnessChartFragment newInstance(String param1, String param2) {
+    public static FitnessChartFragment newInstance(String param1, String param2, String param3) {
         FitnessChartFragment fragment = new FitnessChartFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        args.putString(TIME, param1);
+        args.putString(DISTANCE, param2);
+        args.putString(CALORIES, param3);
         fragment.setArguments(args);
         return fragment;
     }
@@ -53,9 +68,11 @@ public class FitnessChartFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            mTime = getArguments().getString(TIME);
+            mDistance = getArguments().getString(DISTANCE);
+            mCalories = getArguments().getString(CALORIES);
         }
     }
 
@@ -63,7 +80,40 @@ public class FitnessChartFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_fitness_chart, container, false);
+
+        // init example series data
+        View rootView = inflater.inflate(R.layout.fragment_fitness_chart, container, false);
+
+        GraphView graph = (GraphView) rootView.findViewById(R.id.graph);
+        GraphView graph2 = (GraphView) rootView.findViewById(R.id.graph2);
+
+        LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>(new DataPoint[] {
+                new DataPoint(0, 1),
+                new DataPoint(1, 5),
+                new DataPoint(2, 3),
+                new DataPoint(3, 2),
+                new DataPoint(4, 6)
+        });
+        graph.addSeries(series);
+
+        LineGraphSeries<DataPoint> series2 = new LineGraphSeries<DataPoint>(new DataPoint[] {
+                new DataPoint(0, 3),
+                new DataPoint(1, 3),
+                new DataPoint(2, 6),
+                new DataPoint(3, 2),
+                new DataPoint(4, 5)
+        });
+        graph2.addSeries(series2);
+
+        // legend
+        series.setTitle("Distance");
+        series2.setTitle("Calories");
+        graph.getLegendRenderer().setVisible(true);
+        //graph.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.BOTTOM);
+        graph2.getLegendRenderer().setVisible(true);
+        //graph2.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.BOTTOM);
+
+        return rootView;
     }
 
     // TODO: Rename method, update argument and hook method into UI event
