@@ -14,4 +14,5 @@
     <string name="caloriesText">Calories: </string>
     <string name="distanceText">Distance: </string>
     <string name="transportationText">Transportation: </string>
+    <string name="timer">Time: </string>
 </resources>

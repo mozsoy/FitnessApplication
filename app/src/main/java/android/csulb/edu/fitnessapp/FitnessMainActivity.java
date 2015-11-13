@@ -3,11 +3,15 @@ package android.csulb.edu.fitnessapp;
 
 import android.app.Activity;
 import android.app.ActionBar;
+import android.app.AlertDialog;
 import android.app.FragmentTransaction;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.graphics.Color;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.provider.Settings;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
@@ -18,7 +22,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdate;
@@ -199,12 +206,10 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
         Button btn = (Button) findViewById(R.id.btnStartStop);
 
         if(btn.getText().toString().compareTo("Start") == 0) {
-            btn.setText("Stop");
-            LatLng CURRENT_LOCATION = getGPSLocation();
-            setCurrentLocation(CURRENT_LOCATION);
+            transportationDialog();
         }
         else {
-            btn.setText("Start");
+            saveTrackDialog();
         }
     }
 
@@ -227,10 +232,77 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
     private void setCurrentLocation(LatLng CURRENT_LOCATION) {
         map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
         map.addMarker(new MarkerOptions().position(CURRENT_LOCATION).title("Start"));
-
         map.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
         CameraUpdate update = CameraUpdateFactory.newLatLngZoom(CURRENT_LOCATION, 16);
         map.animateCamera(update);
+    }
+
+    private void transportationDialog() {
+        String[] str = {"Walking", "Running", "Biking"};
+        final ArrayAdapter<String> adp = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, str);
+        final Spinner sp = new Spinner(this);
+
+        sp.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT));
+        sp.setAdapter(adp);
+
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+        alertDialog.setTitle("Method of Transportation");
+        alertDialog.setMessage("Choose method of transportation: ");
+        alertDialog.setView(sp);
+        alertDialog.setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                TextView tv = (TextView) findViewById(R.id.transportationText);
+                String selection = sp.getSelectedItem().toString();
+                Button btn = (Button) findViewById(R.id.btnStartStop);
+
+                tv.setText("Transportation: " + selection);
+                btn.setText("Stop");
+                LatLng CURRENT_LOCATION = getGPSLocation();
+                setCurrentLocation(CURRENT_LOCATION);
+            }
+        });
+
+        alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        alertDialog.show();
+    }
+
+    private void saveTrackDialog() {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+        alertDialog.setMessage("Save track data?");
+        alertDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                //TODO Save data/take picture/stop timer/stop tracking/place stop marker
+                Button btn = (Button) findViewById(R.id.btnStartStop);
+                btn.setText("Start");
+            }
+        });
+
+        alertDialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                //TODO Stop timer/stop tracking/place stop marker
+                Button btn = (Button) findViewById(R.id.btnStartStop);
+                btn.setText("Start");
+            }
+        });
+
+        alertDialog.setNeutralButton("Resume", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        alertDialog.show();
     }
 
     public void onButtonViewTrackClick(View v) {
