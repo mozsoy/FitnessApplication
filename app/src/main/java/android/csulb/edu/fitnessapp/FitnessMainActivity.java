@@ -7,9 +7,11 @@ import android.app.FragmentTransaction;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.graphics.Color;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,8 +25,13 @@ import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
+
+import java.util.ArrayList;
+
 
 public class FitnessMainActivity extends Activity implements ActionBar.TabListener, FitnessTrackerFragment.OnFitnessTrackerListener,
     FitnessChartFragment.OnFitnessChartListener, FitnessFilesFragment.OnFitnessFileListener{
@@ -45,6 +52,10 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
     private ViewPager mViewPager;
     private GoogleMap map;
     GPSTracker gps;
+
+    // pointList contains the coordinates to be plotted with polyline
+    private ArrayList<LatLng> pointList;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,7 +97,6 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
         }
 
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -217,8 +227,33 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
     private void setCurrentLocation(LatLng CURRENT_LOCATION) {
         map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
         map.addMarker(new MarkerOptions().position(CURRENT_LOCATION).title("Start"));
+
         map.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
         CameraUpdate update = CameraUpdateFactory.newLatLngZoom(CURRENT_LOCATION, 16);
         map.animateCamera(update);
     }
+
+    public void onButtonViewTrackClick(View v) {
+
+        // When user taps an item in FitnessFilesFragment, ArrayList<LatLng> is sent as "selectedTrack"
+        Bundle myInput = this.getIntent().getExtras();
+        if(myInput == null)
+            Log.d("debug", "argument was null");
+        else
+        {
+            pointList = myInput.getParcelableArrayList("selectedTrack");
+        }
+
+        map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
+        if(pointList != null)
+        {
+            map.addPolyline((new PolylineOptions())
+                    .addAll(pointList).width(5).color(Color.BLUE).geodesic(true));
+            // move camera to zoom on map
+            CameraUpdate update = CameraUpdateFactory.newLatLngZoom(pointList.get(0), 14);
+            map.animateCamera(update);
+        }
+    }
+
+
 }

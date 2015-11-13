@@ -10,6 +10,7 @@
     <string name="fitnesschart">Fitness Chart</string>
     <string name="title_activity_maps">Map</string>
     <string name="btnStartStop">Start</string>
+    <string name="btnViewTrack">View Track</string>
     <string name="caloriesText">Calories: </string>
     <string name="distanceText">Distance: </string>
     <string name="transportationText">Transportation: </string>
