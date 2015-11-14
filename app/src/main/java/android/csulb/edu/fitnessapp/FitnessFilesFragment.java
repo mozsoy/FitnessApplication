@@ -1,19 +1,21 @@
 package android.csulb.edu.fitnessapp;
 
 import android.app.Activity;
-import android.app.FragmentTransaction;
-import android.content.Intent;
-import android.os.Bundle;
 import android.app.ListFragment;
+import android.content.Intent;
+import android.csulb.edu.fitnessapp.dummy.DummyContent;
+import android.os.Bundle;
 import android.view.View;
-import android.widget.TextView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.csulb.edu.fitnessapp.dummy.DummyContent;
+import android.widget.TextView;
+import android.widget.Toast;
 
-import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 
 /**
@@ -25,6 +27,7 @@ import java.util.ArrayList;
  */
 public class FitnessFilesFragment extends ListFragment
 {
+    static final int READ_BLOCK_SIZE = 100;
     private static final LatLng ATHERTON_BELLFLOWER = new LatLng(33.788542, -118.124377);
     private static final LatLng ATHERTON_STUDEBAKER = new LatLng(33.788666, -118.099318);
     private static final LatLng STUDEBAKER_7TH = new LatLng(33.774382, -118.103150);
@@ -85,6 +88,7 @@ public class FitnessFilesFragment extends ListFragment
         itemList.add("Around CSULB");
         itemList.add("Library to Parking");
         itemList.add("Parking to Pyramid");
+        itemList.add("Read track from File");
 
         // TODO: Change Adapter to display your content
         setListAdapter(new ArrayAdapter<String>(getActivity(),
@@ -128,23 +132,43 @@ public class FitnessFilesFragment extends ListFragment
         ArrayList<LatLng> pointList = new ArrayList<>();
         TextView txt = (TextView) v;
         String choice = txt.getText().toString();
-        if(choice == "Around CSULB")
-        {
+        if(choice == "Around CSULB") {
             pointList.add(ATHERTON_BELLFLOWER);
             pointList.add(ATHERTON_STUDEBAKER);
             pointList.add(STUDEBAKER_7TH);
             pointList.add(BELLFLOWER_7TH);
             pointList.add(ATHERTON_BELLFLOWER);
-        }
-        else if(choice == "Library to Parking")
-        {
+        } else if(choice == "Library to Parking") {
             pointList.add(LIBRARY);
             pointList.add(PARKING_STRUCTURE_2);
-        }
-        else if(choice == "Parking to Pyramid")
-        {
+        } else if(choice == "Parking to Pyramid") {
             pointList.add(PARKING_STRUCTURE_3);
             pointList.add(PYRAMID);
+        } else if(choice == "Read track from File"){
+            // read coordinates from file
+            try {
+                RandomAccessFile file = new RandomAccessFile("/data/user/0/android.csulb.edu.fitnessapp/files/track.txt","r");
+                // read size of coordinates array
+                int size = file.readInt();
+                LatLng[] coordinates = new LatLng[size];
+                // read coordinates one by one
+                for(int i = 0; i < size; i++) {
+                    double lat = file.readDouble();
+                    double lng = file.readDouble();
+                    coordinates[i] = new LatLng(lat, lng);
+                    System.out.println(lat + " and" + lng);
+                }
+                file.close();
+
+                System.out.println(size);
+                Toast.makeText(getActivity(), "File loaded successfully!",
+                        Toast.LENGTH_SHORT).show();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
         }
 
 
@@ -165,6 +189,7 @@ public class FitnessFilesFragment extends ListFragment
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
+
     public interface OnFitnessFileListener
     {
         public void onFitnessFileInteraction(String text);
