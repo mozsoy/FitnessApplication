@@ -1,27 +1,21 @@
 package android.csulb.edu.fitnessapp;
 
 
-import android.app.Activity;
 import android.app.ActionBar;
+import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.FragmentTransaction;
-
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.graphics.Color;
+import android.app.FragmentTransaction;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.provider.Settings;
+import android.graphics.Color;
+import android.os.Bundle;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.os.Bundle;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -32,11 +26,14 @@ import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 
@@ -202,11 +199,41 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
         }
     }
 
-    public void onButtonStartStopClick(View v) {
+    public void onButtonStartStopClick(View v) throws IOException {
         Button btn = (Button) findViewById(R.id.btnStartStop);
+        // should get coordinates that was saved every minute
+        ArrayList<LatLng> coordinates = new ArrayList<>();
+        coordinates.add(new LatLng(33.788542, -118.124377));
+        coordinates.add(new LatLng(33.788666, -118.099318));
+        coordinates.add(new LatLng(33.774382, -118.103150));
+        coordinates.add(new LatLng(33.775328, -118.121233));
 
         if(btn.getText().toString().compareTo("Start") == 0) {
             transportationDialog();
+            // Initiate file to write track
+            try {
+                FileOutputStream fOut = openFileOutput("track.txt", MODE_WORLD_READABLE);
+                File path = getFileStreamPath("track.txt");
+
+                byte[] bytesSize = ByteBuffer.allocate(4)
+                        .putInt(coordinates.size()).array();
+                fOut.write(bytesSize, 0, bytesSize.length);
+
+                for(int i = 0; i< coordinates.size(); i++) {
+
+                    byte[] bytesLat = ByteBuffer.allocate(8)
+                            .putDouble(coordinates.get(i).latitude).array();
+                    fOut.write(bytesLat, 0, bytesLat.length);
+
+                    byte[] bytesLng = ByteBuffer.allocate(8)
+                            .putDouble(coordinates.get(i).longitude).array();
+                    fOut.write(bytesLng, 0, bytesLng.length);
+                }
+                System.out.println("file writing");
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         else {
             saveTrackDialog();
