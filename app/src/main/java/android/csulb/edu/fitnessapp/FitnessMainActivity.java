@@ -57,9 +57,6 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
     private GoogleMap map;
     GPSTracker gps;
 
-    // pointList contains the coordinates to be plotted with polyline
-    private ArrayList<LatLng> pointList;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -331,28 +328,5 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
 
         alertDialog.show();
     }
-
-    public void onButtonViewTrackClick(View v) {
-
-        // When user taps an item in FitnessFilesFragment, ArrayList<LatLng> is sent as "selectedTrack"
-        Bundle myInput = this.getIntent().getExtras();
-        if(myInput == null)
-            Log.d("debug", "argument was null");
-        else
-        {
-            pointList = myInput.getParcelableArrayList("selectedTrack");
-        }
-
-        map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
-        if(pointList != null)
-        {
-            map.addPolyline((new PolylineOptions())
-                    .addAll(pointList).width(5).color(Color.BLUE).geodesic(true));
-            // move camera to zoom on map
-            CameraUpdate update = CameraUpdateFactory.newLatLngZoom(pointList.get(0), 14);
-            map.animateCamera(update);
-        }
-    }
-
 
 }

@@ -22,18 +22,6 @@
         android:layout_marginLeft="20dp"
         />
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/btnViewTrack"
-        android:onClick="onButtonViewTrackClick"
-        android:id="@+id/btnViewTrack"
-        android:layout_alignBottom="@+id/transportationText"
-        android:layout_alignLeft="@+id/btnStartStop"
-        android:layout_alignStart="@+id/btnStartStop"
-        android:layout_alignRight="@+id/btnStartStop"
-        android:layout_alignEnd="@+id/btnStartStop"/>
-
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

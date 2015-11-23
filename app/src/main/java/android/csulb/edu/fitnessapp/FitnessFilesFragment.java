@@ -17,6 +17,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * A fragment representing a list of Items.
@@ -132,19 +133,19 @@ public class FitnessFilesFragment extends ListFragment
         ArrayList<LatLng> pointList = new ArrayList<>();
         TextView txt = (TextView) v;
         String choice = txt.getText().toString();
-        if(choice == "Around CSULB") {
+        if(choice.equals("Around CSULB")) {
             pointList.add(ATHERTON_BELLFLOWER);
             pointList.add(ATHERTON_STUDEBAKER);
             pointList.add(STUDEBAKER_7TH);
             pointList.add(BELLFLOWER_7TH);
             pointList.add(ATHERTON_BELLFLOWER);
-        } else if(choice == "Library to Parking") {
+        } else if(choice.equals("Library to Parking")) {
             pointList.add(LIBRARY);
             pointList.add(PARKING_STRUCTURE_2);
-        } else if(choice == "Parking to Pyramid") {
+        } else if(choice.equals("Parking to Pyramid")) {
             pointList.add(PARKING_STRUCTURE_3);
             pointList.add(PYRAMID);
-        } else if(choice == "Read track from File"){
+        } else if(choice.equals("Read track from File")){
             // read coordinates from file
             try {
                 RandomAccessFile file = new RandomAccessFile("/data/user/0/android.csulb.edu.fitnessapp/files/track.txt","r");
@@ -156,11 +157,13 @@ public class FitnessFilesFragment extends ListFragment
                     double lat = file.readDouble();
                     double lng = file.readDouble();
                     coordinates[i] = new LatLng(lat, lng);
-                    System.out.println(lat + " and" + lng);
+                    System.out.println("Lat = " + lat + " lng = " + lng);
                 }
+                // Convert coordinates to pointList so can send to MapActivity
+                pointList = new ArrayList<LatLng>(Arrays.asList(coordinates));
                 file.close();
 
-                System.out.println(size);
+                System.out.println("The size of the coordinates array is " + size);
                 Toast.makeText(getActivity(), "File loaded successfully!",
                         Toast.LENGTH_SHORT).show();
             } catch (FileNotFoundException e) {
@@ -171,9 +174,8 @@ public class FitnessFilesFragment extends ListFragment
 
         }
 
-
-        // When ListItem clicked, go back to FitnessMainActivity
-        Intent intent = new Intent(getActivity(), FitnessMainActivity.class);
+        // When ListItem clicked, go back to MapActivity
+        Intent intent = new Intent(getActivity(), MapActivity.class);
         // Pass ArrayList<LatLng>
         intent.putExtra("selectedTrack", pointList);
         startActivity(intent);
