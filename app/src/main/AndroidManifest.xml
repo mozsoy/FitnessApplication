@@ -36,7 +36,12 @@
         </activity>
         <activity
             android:name=".MapActivity"
-            android:label="@string/title_activity_map">
+            android:label="@string/title_activity_map"
+            android:parentActivityName=".FitnessMainActivity">
+
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".FitnessMainActivity" />
         </activity>
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.

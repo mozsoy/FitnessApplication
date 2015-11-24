@@ -27,6 +27,7 @@ public class MapActivity extends Activity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fitness_map);
+        this.getActionBar().setDisplayHomeAsUpEnabled(true);
 
         // When user taps an item in FitnessFilesFragment, ArrayList<LatLng> is sent as "selectedTrack"
         Bundle myInput = this.getIntent().getExtras();

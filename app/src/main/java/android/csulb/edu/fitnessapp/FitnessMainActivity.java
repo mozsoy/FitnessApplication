@@ -8,11 +8,9 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -238,8 +236,7 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
     }
 
     private LatLng getGPSLocation() {
-        gps = new GPSTracker(this);
-
+        gps.getLocation();
         if(gps.canGetLocation()) {
             double latitude = gps.getLatitude();
             double longitude = gps.getLongitude();
@@ -253,11 +250,13 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
         }
     }
 
-    private void setCurrentLocation(LatLng CURRENT_LOCATION) {
-        map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
-        map.addMarker(new MarkerOptions().position(CURRENT_LOCATION).title("Start"));
+    private void setCurrentLocation() {
+        LatLng current = getGPSLocation();
+        map.setMyLocationEnabled(true);
+        map.getUiSettings().setZoomControlsEnabled(true);
+        map.addMarker(new MarkerOptions().position(current).title("Start"));
         map.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
-        CameraUpdate update = CameraUpdateFactory.newLatLngZoom(CURRENT_LOCATION, 16);
+        CameraUpdate update = CameraUpdateFactory.newLatLngZoom(current, 18);
         map.animateCamera(update);
     }
 
@@ -277,14 +276,18 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
         alertDialog.setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                TextView tv = (TextView) findViewById(R.id.transportationText);
+                TextView transportation = (TextView) findViewById(R.id.transportationSel);
                 String selection = sp.getSelectedItem().toString();
+                TextView distance = (TextView) findViewById(R.id.distanceVal);
+                TextView calories = (TextView) findViewById(R.id.caloriesVal);
                 Button btn = (Button) findViewById(R.id.btnStartStop);
+                map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
+                gps = new GPSTracker(getApplicationContext(), map, distance, calories, selection);
 
-                tv.setText("Transportation: " + selection);
+                mapCleanUp();
+                transportation.setText(selection);
                 btn.setText("Stop");
-                LatLng CURRENT_LOCATION = getGPSLocation();
-                setCurrentLocation(CURRENT_LOCATION);
+                setCurrentLocation();
             }
         });
 
@@ -304,18 +307,22 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
         alertDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                //TODO Save data/take picture/stop timer/stop tracking/place stop marker
+                //TODO Save data/stop timer
+                map.addMarker(new MarkerOptions().position(getGPSLocation()).title("Stop"));
                 Button btn = (Button) findViewById(R.id.btnStartStop);
                 btn.setText("Start");
+                gps.stopUsingGPS();
             }
         });
 
         alertDialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                //TODO Stop timer/stop tracking/place stop marker
+                //TODO Stop timer
+                map.addMarker(new MarkerOptions().position(getGPSLocation()).title("Stop"));
                 Button btn = (Button) findViewById(R.id.btnStartStop);
                 btn.setText("Start");
+                gps.stopUsingGPS();
             }
         });
 
@@ -329,4 +336,9 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
         alertDialog.show();
     }
 
+    private void mapCleanUp() {
+        map.clear();
+        GPSTracker.gpsCoordinates = new ArrayList<>();
+        GPSTracker.line = map.addPolyline(new PolylineOptions());
+    }
 }

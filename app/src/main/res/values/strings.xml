@@ -12,8 +12,8 @@
     <string name="title_activity_maps">Map</string>
     <string name="btnStartStop">Start</string>
     <string name="btnViewTrack">View Track</string>
-    <string name="caloriesText">Calories: </string>
-    <string name="distanceText">Distance: </string>
+    <string name="caloriesText">Calories Burned:</string>
+    <string name="distanceText">Distance (meters):</string>
     <string name="transportationText">Transportation: </string>
     <string name="timer">Time: </string>
 </resources>

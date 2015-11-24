@@ -21,12 +21,11 @@
         android:layout_marginBottom="40dp"
         android:layout_marginLeft="20dp"
         />
-
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/caloriesText"
-        android:text="@string/caloriesText"
+        android:id="@+id/caloriesVal"
+        android:text="0"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:layout_marginBottom="40dp"
@@ -36,9 +35,40 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:id="@+id/caloriesText"
+        android:text="@string/caloriesText"
+        android:layout_alignParentBottom="true"
+        android:layout_toLeftOf="@+id/caloriesVal"
+        android:layout_marginBottom="40dp"
+        android:layout_marginRight="5dp"
+        android:textSize="20sp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:id="@+id/timerText"
         android:text="@string/timer"
         android:layout_above="@id/caloriesText"
+        android:layout_toLeftOf="@+id/timerVal"
+        android:layout_marginRight="5dp"
+        android:textSize="20sp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/timerVal"
+        android:text="0:00"
+        android:layout_above="@id/caloriesText"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="20dp"
+        android:textSize="20sp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/distanceVal"
+        android:text="0"
+        android:layout_above="@id/timerText"
         android:layout_alignParentRight="true"
         android:layout_marginRight="20dp"
         android:textSize="20sp"/>
@@ -49,6 +79,15 @@
         android:id="@+id/distanceText"
         android:text="@string/distanceText"
         android:layout_above="@id/timerText"
+        android:layout_toLeftOf="@id/distanceVal"
+        android:layout_marginRight="5dp"
+        android:textSize="20sp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/transportationSel"
+        android:layout_above="@id/distanceText"
         android:layout_alignParentRight="true"
         android:layout_marginRight="20dp"
         android:textSize="20sp"/>
@@ -59,7 +98,8 @@
         android:id="@+id/transportationText"
         android:text="@string/transportationText"
         android:layout_above="@id/distanceText"
-        android:layout_alignParentRight="true"
-        android:layout_marginRight="20dp"
+        android:layout_toLeftOf="@id/transportationSel"
+        android:layout_marginRight="5dp"
         android:textSize="20sp"/>
+
 </RelativeLayout>
