@@ -321,7 +321,6 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
         LatLng current = getGPSLocation();
         map.setMyLocationEnabled(true);
         map.getUiSettings().setZoomControlsEnabled(true);
-        map.addMarker(new MarkerOptions().position(current).title("Start"));
         map.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
         CameraUpdate update = CameraUpdateFactory.newLatLngZoom(current, 18);
         map.animateCamera(update);
@@ -386,7 +385,8 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 //TODO Stop timer
-                map.addMarker(new MarkerOptions().position(getGPSLocation()).title("Stop"));
+                map.addMarker(new MarkerOptions().position(gps.gpsCoordinates
+                        .get(gps.gpsCoordinates.size()-1)).title("Stop"));
                 Button btn = (Button) findViewById(R.id.btnStartStop);
                 btn.setText("Start");
                 gps.stopUsingGPS();
