@@ -8,6 +8,88 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/separate_map"
-        android:name="com.google.android.gms.maps.MapFragment" />
+        android:name="com.google.android.gms.maps.MapFragment"
+        android:layout_marginBottom="150dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/caloriesVal2"
+        android:text="0"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="40dp"
+        android:layout_marginRight="20dp"
+        android:textSize="20sp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/caloriesText2"
+        android:text="@string/caloriesText"
+        android:layout_alignParentBottom="true"
+        android:layout_toLeftOf="@+id/caloriesVal2"
+        android:layout_marginBottom="40dp"
+        android:layout_marginRight="5dp"
+        android:textSize="20sp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/timerText2"
+        android:text="@string/timer"
+        android:layout_above="@id/caloriesText2"
+        android:layout_toLeftOf="@+id/timerVal2"
+        android:layout_marginRight="5dp"
+        android:textSize="20sp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/timerVal2"
+        android:text="0:00"
+        android:layout_above="@id/caloriesText2"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="20dp"
+        android:textSize="20sp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/distanceVal2"
+        android:text="0"
+        android:layout_above="@id/timerText2"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="20dp"
+        android:textSize="20sp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/distanceText2"
+        android:text="@string/distanceText"
+        android:layout_above="@id/timerText2"
+        android:layout_toLeftOf="@id/distanceVal2"
+        android:layout_marginRight="5dp"
+        android:textSize="20sp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/transportationSel2"
+        android:layout_above="@id/distanceText2"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="20dp"
+        android:textSize="20sp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/transportationText2"
+        android:text="@string/transportationText"
+        android:layout_above="@id/distanceText2"
+        android:layout_toLeftOf="@id/transportationSel2"
+        android:layout_marginRight="5dp"
+        android:textSize="20sp"/>
 
 </RelativeLayout>

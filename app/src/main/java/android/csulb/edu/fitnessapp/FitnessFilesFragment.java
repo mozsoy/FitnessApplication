@@ -86,9 +86,9 @@ public class FitnessFilesFragment extends ListFragment
         }
 
         // Add track names to list
-        itemList.add("Around CSULB");
-        itemList.add("Library to Parking");
-        itemList.add("Parking to Pyramid");
+        itemList.add("5/6/2015");
+        itemList.add("7/12/2015");
+        itemList.add("11/1/2015");
         itemList.add("Read track from File");
 
         // TODO: Change Adapter to display your content
@@ -133,16 +133,16 @@ public class FitnessFilesFragment extends ListFragment
         ArrayList<LatLng> pointList = new ArrayList<>();
         TextView txt = (TextView) v;
         String choice = txt.getText().toString();
-        if(choice.equals("Around CSULB")) {
+        if(choice.equals("5/6/2015")) {
             pointList.add(ATHERTON_BELLFLOWER);
             pointList.add(ATHERTON_STUDEBAKER);
             pointList.add(STUDEBAKER_7TH);
             pointList.add(BELLFLOWER_7TH);
             pointList.add(ATHERTON_BELLFLOWER);
-        } else if(choice.equals("Library to Parking")) {
+        } else if(choice.equals("7/12/2015")) {
             pointList.add(LIBRARY);
             pointList.add(PARKING_STRUCTURE_2);
-        } else if(choice.equals("Parking to Pyramid")) {
+        } else if(choice.equals("11/1/2015")) {
             pointList.add(PARKING_STRUCTURE_3);
             pointList.add(PYRAMID);
         } else if(choice.equals("Read track from File")){

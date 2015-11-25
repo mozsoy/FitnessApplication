@@ -16,6 +16,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
@@ -61,6 +62,10 @@ public class MapActivity extends Activity
             // Draw polyline using pointList
             map.addPolyline((new PolylineOptions())
                     .addAll(pointList).width(5).color(Color.BLUE).geodesic(true));
+
+            // Add markers at start and end of track
+            map.addMarker(new MarkerOptions().position(pointList.get(0)).title("Start"));
+            map.addMarker(new MarkerOptions().position(pointList.get(pointList.size()-1)).title("End"));
 
             // Move camera.  Zoom level arbitrarily set to 12.
             CameraUpdate update = CameraUpdateFactory.newLatLngZoom(pointList.get(0), 12);
