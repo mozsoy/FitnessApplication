@@ -8,6 +8,8 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -34,6 +36,10 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
+import android.content.pm.PackageManager;
+import android.hardware.Camera;
+import android.hardware.Camera.Parameters;
+
 
 public class FitnessMainActivity extends Activity implements ActionBar.TabListener, FitnessTrackerFragment.OnFitnessTrackerListener,
     FitnessChartFragment.OnFitnessChartListener, FitnessFilesFragment.OnFitnessFileListener{
@@ -54,6 +60,10 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
     private ViewPager mViewPager;
     private GoogleMap map;
     GPSTracker gps;
+
+    // Fields for flash functionality
+    Camera camera;
+    Camera.Parameters parameters;
 
 
     @Override
@@ -95,28 +105,85 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
                             .setTabListener(this));
         }
 
+        if (isFlashSupported())
+        {
+            camera = Camera.open();
+            parameters = camera.getParameters();
+        }
+        else
+        {
+            showNoFlashAlert();
+        }
+
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_fitness_main, menu);
         return true;
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch (item.getItemId())
+        {
+            case R.id.led_on:
+                // Turn on LED
+                parameters.setFlashMode(Parameters.FLASH_MODE_TORCH);
+                camera.setParameters(parameters);
+                camera.startPreview();
+                return true;
+            case R.id.led_off:
+                // Turn off LED
+                parameters.setFlashMode(Parameters.FLASH_MODE_OFF);
+                camera.setParameters(parameters);
+                camera.stopPreview();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
+    }
 
-        return super.onOptionsItemSelected(item);
+    private void showNoFlashAlert()
+    {
+        new AlertDialog.Builder(this)
+                .setMessage("Your device hardware does not support flashlight!")
+                .setIcon(android.R.drawable.ic_dialog_alert).setTitle("Error")
+                .setPositiveButton("Ok", new DialogInterface.OnClickListener()
+                {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which)
+                    {
+                        dialog.dismiss();
+                        finish();
+                    }
+                }).show();
+    }
+
+    private boolean isFlashSupported()
+    {
+        PackageManager pm = getPackageManager();
+        return pm.hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH);
+    }
+
+    @Override
+    protected void onPause()
+    {
+        super.onPause();
+        // Release camera when activity paused
+        if(camera != null)
+        {
+            camera.stopPreview();
+            camera.release();
+            camera = null;
+        }
     }
 
     @Override

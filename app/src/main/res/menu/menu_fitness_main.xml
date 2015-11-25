@@ -1,6 +1,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:context="android.csulb.edu.fitnessapp.FitnessMainActivity">
-    <item android:id="@+id/action_settings" android:title="@string/action_settings"
-        android:orderInCategory="100" android:showAsAction="never" />
+      xmlns:tools="http://schemas.android.com/tools"
+      xmlns:app="http://schemas.android.com/apk/res-auto"
+      tools:context="android.csulb.edu.fitnessapp.FitnessMainActivity">
+    <item android:id="@+id/led_on"
+          android:title="LED On"
+          app:showAsAction="withText"/>
+    <item android:id="@+id/led_off"
+          android:title="LED Off"
+          app:showAsAction="withText"/>
 </menu>
