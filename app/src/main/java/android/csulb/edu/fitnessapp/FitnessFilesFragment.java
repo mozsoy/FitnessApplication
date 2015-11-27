@@ -4,8 +4,10 @@ import android.app.Activity;
 import android.app.ListFragment;
 import android.content.Intent;
 import android.csulb.edu.fitnessapp.dummy.DummyContent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -13,11 +15,8 @@ import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.TreeMap;
 
 /**
  * A fragment representing a list of Items.
@@ -26,8 +25,7 @@ import java.util.Arrays;
  * Activities containing this fragment MUST implement the {@link android.csulb.edu.fitnessapp.FitnessFilesFragment.OnFitnessFileListener}
  * interface.
  */
-public class FitnessFilesFragment extends ListFragment
-{
+public class FitnessFilesFragment extends ListFragment {
     static final int READ_BLOCK_SIZE = 100;
     private static final LatLng ATHERTON_BELLFLOWER = new LatLng(33.788542, -118.124377);
     private static final LatLng ATHERTON_STUDEBAKER = new LatLng(33.788666, -118.099318);
@@ -41,7 +39,7 @@ public class FitnessFilesFragment extends ListFragment
     private static final LatLng PYRAMID = new LatLng(33.787621, -118.114198);
 
     private ArrayList<String> itemList = new ArrayList<String>();
-
+    TrackDBHelper mDBHelper;
 
 
     // TODO: Rename parameter arguments, choose names that match
@@ -54,10 +52,10 @@ public class FitnessFilesFragment extends ListFragment
     private String mParam2;
 
     private OnFitnessFileListener mListener;
+    TreeMap<String, Integer> tracks;
 
     // TODO: Rename and change types of parameters
-    public static FitnessFilesFragment newInstance(String param1, String param2)
-    {
+    public static FitnessFilesFragment newInstance(String param1, String param2) {
         FitnessFilesFragment fragment = new FitnessFilesFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
@@ -70,43 +68,62 @@ public class FitnessFilesFragment extends ListFragment
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
-    public FitnessFilesFragment()
-    {
+    public FitnessFilesFragment() {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getArguments() != null)
-        {
+        if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
 
-        // Add track names to list
-        itemList.add("5/6/2015");
-        itemList.add("7/12/2015");
-        itemList.add("11/1/2015");
-        itemList.add("Read track from File");
+        mDBHelper = new TrackDBHelper(getActivity());
+        tracks = mDBHelper.getAllTracks();
+        // Add track from database to list
+        itemList.addAll(mDBHelper.getAllTracks().keySet());
 
         // TODO: Change Adapter to display your content
         setListAdapter(new ArrayAdapter<String>(getActivity(),
                 android.R.layout.simple_list_item_1, android.R.id.text1, itemList));
     }
 
+    @Override
+    public void onActivityCreated(Bundle savedState) {
+        super.onActivityCreated(savedState);
+
+        // Update Item List
+        itemList.clear();
+        mDBHelper = new TrackDBHelper(getActivity());
+        tracks = mDBHelper.getAllTracks();
+        itemList.addAll(mDBHelper.getAllTracks().keySet());
+
+        getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> arg0, View v, int position, long id) {
+                // On long click of an item in list, delete the item from list and database
+                TextView txt = (TextView) v;
+                String choice = txt.getText().toString();
+                Cursor resultSet = mDBHelper.getData(tracks.get(choice));
+                resultSet.moveToFirst();
+                mDBHelper.deleteTrack(resultSet.getString(0));
+                itemList.remove(position);
+                setListAdapter(new ArrayAdapter<String>(getActivity(),
+                        android.R.layout.simple_list_item_1, android.R.id.text1, itemList));
+                Toast.makeText(getActivity(), "Track deleted", Toast.LENGTH_LONG).show();
+                return true;
+            }
+        });
+    }
 
     @Override
-    public void onAttach(Activity activity)
-    {
+    public void onAttach(Activity activity) {
         super.onAttach(activity);
-        try
-        {
+        try {
             mListener = (OnFitnessFileListener) activity;
-        }
-        catch (ClassCastException e)
-        {
+        } catch (ClassCastException e) {
             throw new ClassCastException(activity.toString()
                     + " must implement OnFragmentInteractionListener");
         }
@@ -119,8 +136,7 @@ public class FitnessFilesFragment extends ListFragment
     }
 
     @Override
-    public void onListItemClick(ListView l, View v, int position, long id)
-    {
+    public void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
 
         if (null != mListener) {
@@ -133,7 +149,7 @@ public class FitnessFilesFragment extends ListFragment
         ArrayList<LatLng> pointList = new ArrayList<>();
         TextView txt = (TextView) v;
         String choice = txt.getText().toString();
-        if(choice.equals("5/6/2015")) {
+        /*if(choice.equals("5/6/2015")) {
             pointList.add(ATHERTON_BELLFLOWER);
             pointList.add(ATHERTON_STUDEBAKER);
             pointList.add(STUDEBAKER_7TH);
@@ -172,8 +188,22 @@ public class FitnessFilesFragment extends ListFragment
                 e.printStackTrace();
             }
 
-        }
+        } */
 
+        // Get coordinates for the selected track from database
+        System.out.println(mDBHelper.getData(3).getColumnCount());
+        Cursor resultSet = mDBHelper.getData(tracks.get(choice));
+        resultSet.moveToFirst();
+        String coords = resultSet.getString(2);
+        System.out.println(coords);
+
+        String[] latlong = coords.split(",");
+        for (int i = 0; i < latlong.length; i++) {
+            System.out.println(latlong[i]);
+        }
+        for (int i = 0; i < latlong.length / 2; i++) {
+            pointList.add(new LatLng(Double.parseDouble(latlong[i]), Double.parseDouble(latlong[i + 1])));
+        }
         // When ListItem clicked, go back to MapActivity
         Intent intent = new Intent(getActivity(), MapActivity.class);
         // Pass ArrayList<LatLng>
@@ -192,8 +222,7 @@ public class FitnessFilesFragment extends ListFragment
      * >Communicating with Other Fragments</a> for more information.
      */
 
-    public interface OnFitnessFileListener
-    {
+    public interface OnFitnessFileListener {
         public void onFitnessFileInteraction(String text);
     }
 

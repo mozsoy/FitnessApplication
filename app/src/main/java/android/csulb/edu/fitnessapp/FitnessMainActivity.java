@@ -8,11 +8,13 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.net.Uri;
+import android.content.pm.PackageManager;
+import android.hardware.Camera;
+import android.hardware.Camera.Parameters;
 import android.os.Bundle;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.text.format.Time;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,6 +23,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -36,13 +39,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
-import android.content.pm.PackageManager;
-import android.hardware.Camera;
-import android.hardware.Camera.Parameters;
-
 
 public class FitnessMainActivity extends Activity implements ActionBar.TabListener, FitnessTrackerFragment.OnFitnessTrackerListener,
-    FitnessChartFragment.OnFitnessChartListener, FitnessFilesFragment.OnFitnessFileListener{
+        FitnessChartFragment.OnFitnessChartListener, FitnessFilesFragment.OnFitnessFileListener {
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -60,16 +59,33 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
     private ViewPager mViewPager;
     private GoogleMap map;
     GPSTracker gps;
+    TrackDBHelper mDBHelper;
 
     // Fields for flash functionality
     Camera camera;
     Camera.Parameters parameters;
 
+    String date;
+    String coords;
+    TextView transportation;
+    TextView distance;
+    TextView calories;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fitness_main);
+
+        mDBHelper = new TrackDBHelper(this);
+
+        Time today = new Time(Time.getCurrentTimezone());
+        today.setToNow();
+        date = today.format("%k:%M:%S");
+
+        /*transportation = (TextView) findViewById(R.id.transportationSel);
+        distance = (TextView) findViewById(R.id.distanceVal);
+        calories = (TextView) findViewById(R.id.caloriesVal);*/
+
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mSectionsPagerAdapter = new SectionsPagerAdapter(getFragmentManager());
@@ -105,34 +121,28 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
                             .setTabListener(this));
         }
 
-        if (isFlashSupported())
-        {
+        if (isFlashSupported()) {
             camera = Camera.open();
             parameters = camera.getParameters();
-        }
-        else
-        {
+        } else {
             showNoFlashAlert();
         }
 
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
+    public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_fitness_main, menu);
         return true;
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item)
-    {
+    public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        switch (item.getItemId())
-        {
+        switch (item.getItemId()) {
             case R.id.led_on:
                 // Turn on LED
                 parameters.setFlashMode(Parameters.FLASH_MODE_TORCH);
@@ -150,36 +160,30 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
         }
     }
 
-    private void showNoFlashAlert()
-    {
+    private void showNoFlashAlert() {
         new AlertDialog.Builder(this)
                 .setMessage("Your device hardware does not support flashlight!")
                 .setIcon(android.R.drawable.ic_dialog_alert).setTitle("Error")
-                .setPositiveButton("Ok", new DialogInterface.OnClickListener()
-                {
+                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 
                     @Override
-                    public void onClick(DialogInterface dialog, int which)
-                    {
+                    public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
                         finish();
                     }
                 }).show();
     }
 
-    private boolean isFlashSupported()
-    {
+    private boolean isFlashSupported() {
         PackageManager pm = getPackageManager();
         return pm.hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH);
     }
 
     @Override
-    protected void onPause()
-    {
+    protected void onPause() {
         super.onPause();
         // Release camera when activity paused
-        if(camera != null)
-        {
+        if (camera != null) {
             camera.stopPreview();
             camera.release();
             camera = null;
@@ -230,13 +234,11 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
         public Fragment getItem(int position) {
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
-            if(position == 0) {
+            if (position == 0) {
                 return FitnessTrackerFragment.newInstance("test", "test");
-            }
-            else if(position == 1) {
+            } else if (position == 1) {
                 return FitnessChartFragment.newInstance("test", "test", "test");
-            }
-            else {
+            } else {
                 return FitnessFilesFragment.newInstance("test", "test");
             }
         }
@@ -263,14 +265,23 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
 
     public void onButtonStartStopClick(View v) throws IOException {
         Button btn = (Button) findViewById(R.id.btnStartStop);
-        // should get coordinates that was saved every minute
+        // Should get coordinates that was saved every minute
         ArrayList<LatLng> coordinates = new ArrayList<>();
         coordinates.add(new LatLng(33.788542, -118.124377));
         coordinates.add(new LatLng(33.788666, -118.099318));
         coordinates.add(new LatLng(33.774382, -118.103150));
         coordinates.add(new LatLng(33.775328, -118.121233));
+        // Parse LatLng to string
+        coords = String.valueOf(coordinates.get(0).latitude);
+        coords = coords + ",";
+        coords = coords + String.valueOf(coordinates.get(0).longitude);
+        if (coordinates.size() > 1) {
+            for (int i = 1; i < coordinates.size(); i++) {
+                coords += "," + coordinates.get(i).latitude + "," + coordinates.get(i).longitude;
+            }
+        }
 
-        if(btn.getText().toString().compareTo("Start") == 0) {
+        if (btn.getText().toString().compareTo("Start") == 0) {
             transportationDialog();
             // Initiate file to write track
             try {
@@ -281,7 +292,7 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
                         .putInt(coordinates.size()).array();
                 fOut.write(bytesSize, 0, bytesSize.length);
 
-                for(int i = 0; i< coordinates.size(); i++) {
+                for (int i = 0; i < coordinates.size(); i++) {
 
                     byte[] bytesLat = ByteBuffer.allocate(8)
                             .putDouble(coordinates.get(i).latitude).array();
@@ -296,22 +307,20 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
-        else {
+        } else {
             saveTrackDialog();
         }
     }
 
     private LatLng getGPSLocation() {
         gps.getLocation();
-        if(gps.canGetLocation()) {
+        if (gps.canGetLocation()) {
             double latitude = gps.getLatitude();
             double longitude = gps.getLongitude();
             LatLng location = new LatLng(latitude, longitude);
 
             return location;
-        }
-        else {
+        } else {
             gps.showSettingsAlert();
             return null;
         }
@@ -342,10 +351,10 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
         alertDialog.setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                TextView transportation = (TextView) findViewById(R.id.transportationSel);
+                transportation = (TextView) findViewById(R.id.transportationSel);
                 String selection = sp.getSelectedItem().toString();
-                TextView distance = (TextView) findViewById(R.id.distanceVal);
-                TextView calories = (TextView) findViewById(R.id.caloriesVal);
+                distance = (TextView) findViewById(R.id.distanceVal);
+                calories = (TextView) findViewById(R.id.caloriesVal);
                 Button btn = (Button) findViewById(R.id.btnStartStop);
                 map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
                 gps = new GPSTracker(getApplicationContext(), map, distance, calories, selection);
@@ -374,6 +383,12 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 //TODO Save data/stop timer
+                Time currentTime = new Time(Time.getCurrentTimezone());
+                currentTime.setToNow();
+                date = currentTime.format("%k:%M:%S");
+                mDBHelper.insertTrack(date, coords, transportation.getText().toString(), distance.getText().toString(), calories.getText().toString());
+                System.out.println(date + coords + transportation.getText().toString() + distance.getText().toString() + calories.getText().toString());
+                Toast.makeText(getApplicationContext(), "saved", Toast.LENGTH_LONG).show();
                 map.addMarker(new MarkerOptions().position(getGPSLocation()).title("Stop"));
                 Button btn = (Button) findViewById(R.id.btnStartStop);
                 btn.setText("Start");
@@ -386,7 +401,7 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
             public void onClick(DialogInterface dialog, int which) {
                 //TODO Stop timer
                 map.addMarker(new MarkerOptions().position(gps.gpsCoordinates
-                        .get(gps.gpsCoordinates.size()-1)).title("Stop"));
+                        .get(gps.gpsCoordinates.size() - 1)).title("Stop"));
                 Button btn = (Button) findViewById(R.id.btnStartStop);
                 btn.setText("Start");
                 gps.stopUsingGPS();
