@@ -24,11 +24,18 @@ import java.util.ArrayList;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.hardware.Camera.Parameters;
+import android.widget.TextView;
+
+import org.w3c.dom.Text;
 
 public class MapActivity extends Activity
 {
     // pointList contains the coordinates to be plotted with polyline
     private ArrayList<LatLng> pointList;
+    private String calories;
+    private String distance;
+    private String time;
+    private String transportation;
     private GoogleMap map;
 
     // Fields for flash functionality
@@ -49,7 +56,20 @@ public class MapActivity extends Activity
         else
         {
             pointList = myInput.getParcelableArrayList("selectedTrack");
+            calories = myInput.getString("calories");
+            distance = myInput.getString("distance");
+            transportation = myInput.getString("transportation");
+            time = myInput.getString("time");
         }
+
+        TextView caloriesTV = (TextView) findViewById(R.id.caloriesVal2);
+        caloriesTV.setText(calories);
+        TextView distanceTV = (TextView) findViewById(R.id.distanceVal2);
+        distanceTV.setText(distance);
+        TextView transportationTV = (TextView) findViewById(R.id.transportationSel2);
+        transportationTV.setText(transportation);
+        TextView timeTV = (TextView) findViewById(R.id.timerVal2);
+        timeTV.setText(time);
 
         map = ((MapFragment) getFragmentManager().findFragmentById(R.id.separate_map)).getMap();
 
@@ -67,8 +87,8 @@ public class MapActivity extends Activity
             map.addMarker(new MarkerOptions().position(pointList.get(0)).title("Start"));
             map.addMarker(new MarkerOptions().position(pointList.get(pointList.size()-1)).title("End"));
 
-            // Move camera.  Zoom level arbitrarily set to 12.
-            CameraUpdate update = CameraUpdateFactory.newLatLngZoom(pointList.get(0), 12);
+            // Move camera.  Zoom level arbitrarily set to 16.
+            CameraUpdate update = CameraUpdateFactory.newLatLngZoom(pointList.get(0), 16);
             map.animateCamera(update);
         }
 

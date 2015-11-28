@@ -12,14 +12,17 @@ import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.hardware.Camera.Parameters;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.text.format.Time;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.Chronometer;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -38,6 +41,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 
 public class FitnessMainActivity extends Activity implements ActionBar.TabListener, FitnessTrackerFragment.OnFitnessTrackerListener,
@@ -66,10 +70,10 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
     Camera.Parameters parameters;
 
     String date;
-    String coords;
     TextView transportation;
     TextView distance;
     TextView calories;
+    Chronometer chrono;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -265,48 +269,9 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
 
     public void onButtonStartStopClick(View v) throws IOException {
         Button btn = (Button) findViewById(R.id.btnStartStop);
-        // Should get coordinates that was saved every minute
-        ArrayList<LatLng> coordinates = new ArrayList<>();
-        coordinates.add(new LatLng(33.788542, -118.124377));
-        coordinates.add(new LatLng(33.788666, -118.099318));
-        coordinates.add(new LatLng(33.774382, -118.103150));
-        coordinates.add(new LatLng(33.775328, -118.121233));
-        // Parse LatLng to string
-        coords = String.valueOf(coordinates.get(0).latitude);
-        coords = coords + ",";
-        coords = coords + String.valueOf(coordinates.get(0).longitude);
-        if (coordinates.size() > 1) {
-            for (int i = 1; i < coordinates.size(); i++) {
-                coords += "," + coordinates.get(i).latitude + "," + coordinates.get(i).longitude;
-            }
-        }
 
         if (btn.getText().toString().compareTo("Start") == 0) {
             transportationDialog();
-            // Initiate file to write track
-            try {
-                FileOutputStream fOut = openFileOutput("track.txt", MODE_WORLD_READABLE);
-                File path = getFileStreamPath("track.txt");
-
-                byte[] bytesSize = ByteBuffer.allocate(4)
-                        .putInt(coordinates.size()).array();
-                fOut.write(bytesSize, 0, bytesSize.length);
-
-                for (int i = 0; i < coordinates.size(); i++) {
-
-                    byte[] bytesLat = ByteBuffer.allocate(8)
-                            .putDouble(coordinates.get(i).latitude).array();
-                    fOut.write(bytesLat, 0, bytesLat.length);
-
-                    byte[] bytesLng = ByteBuffer.allocate(8)
-                            .putDouble(coordinates.get(i).longitude).array();
-                    fOut.write(bytesLng, 0, bytesLng.length);
-                }
-                System.out.println("file writing");
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         } else {
             saveTrackDialog();
         }
@@ -337,7 +302,8 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
 
     private void transportationDialog() {
         String[] str = {"Walking", "Running", "Biking"};
-        final ArrayAdapter<String> adp = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, str);
+        final ArrayAdapter<String> adp = new ArrayAdapter<String>(this,
+                android.R.layout.simple_spinner_item, str);
         final Spinner sp = new Spinner(this);
 
         sp.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -351,6 +317,7 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
         alertDialog.setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                chrono = (Chronometer) findViewById(R.id.timerVal);
                 transportation = (TextView) findViewById(R.id.transportationSel);
                 String selection = sp.getSelectedItem().toString();
                 distance = (TextView) findViewById(R.id.distanceVal);
@@ -363,6 +330,8 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
                 transportation.setText(selection);
                 btn.setText("Stop");
                 setCurrentLocation();
+                chrono.setBase(SystemClock.elapsedRealtime());
+                chrono.start();
             }
         });
 
@@ -382,13 +351,15 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
         alertDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                //TODO Save data/stop timer
                 Time currentTime = new Time(Time.getCurrentTimezone());
                 currentTime.setToNow();
-                date = currentTime.format("%k:%M:%S");
-                mDBHelper.insertTrack(date, coords, transportation.getText().toString(), distance.getText().toString(), calories.getText().toString());
-                System.out.println(date + coords + transportation.getText().toString() + distance.getText().toString() + calories.getText().toString());
-                Toast.makeText(getApplicationContext(), "saved", Toast.LENGTH_LONG).show();
+                date = currentTime.format("%x");
+                String coords = formatCoordinates();
+                chrono.stop();
+                String time = formatTime(SystemClock.elapsedRealtime() - chrono.getBase());
+                mDBHelper.insertTrack(date, coords, transportation.getText().toString(),
+                        distance.getText().toString(), calories.getText().toString(), time);
+                Toast.makeText(getApplicationContext(), "Track Saved", Toast.LENGTH_LONG).show();
                 map.addMarker(new MarkerOptions().position(getGPSLocation()).title("Stop"));
                 Button btn = (Button) findViewById(R.id.btnStartStop);
                 btn.setText("Start");
@@ -399,7 +370,7 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
         alertDialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                //TODO Stop timer
+                chrono.stop();
                 map.addMarker(new MarkerOptions().position(gps.gpsCoordinates
                         .get(gps.gpsCoordinates.size() - 1)).title("Stop"));
                 Button btn = (Button) findViewById(R.id.btnStartStop);
@@ -422,5 +393,32 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
         map.clear();
         GPSTracker.gpsCoordinates = new ArrayList<>();
         GPSTracker.line = map.addPolyline(new PolylineOptions());
+    }
+
+    private String formatCoordinates() {
+        String str = "";
+        ArrayList<LatLng> coords = GPSTracker.gpsCoordinates;
+        if(coords.size() > 0) {
+            str += coords.get(0).latitude + "," + coords.get(0).longitude;
+
+            if (coords.size() > 1) {
+                for (int i = 1; i < coords.size(); i++) {
+                    str += "," + coords.get(i).latitude + "," + coords.get(i).longitude;
+                }
+            }
+        }
+
+        return str;
+    }
+
+    private String formatTime(long time) {
+        String str = "";
+        str = String.format("%02d:%02d:%02d",
+                TimeUnit.MILLISECONDS.toHours(time),
+                TimeUnit.MILLISECONDS.toMinutes(time) -
+                        TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours((time))),
+                TimeUnit.MILLISECONDS.toSeconds(time) -
+                        TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(time)));
+        return str;
     }
 }

@@ -25,6 +25,8 @@ public class TrackDBHelper extends SQLiteOpenHelper {
     public static final String DISTANCE = "distance";
     public static final String CALORIES = "calories";
     public static final String COORDINATES = "coordinates";
+    public static final String TIME = "time";
+
     private HashMap hp;
 
     public TrackDBHelper(Context context) {
@@ -36,7 +38,8 @@ public class TrackDBHelper extends SQLiteOpenHelper {
         // TODO Auto-generated method stub
         db.execSQL(
                 "create table tracks " +
-                        "(id integer primary key, date text,coordinates text,transportation text, distance text,calories text)"
+                        "(id integer primary key, date text, coordinates text, " +
+                        "transportation text, distance text, calories text, time text)"
         );
     }
 
@@ -47,7 +50,8 @@ public class TrackDBHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public boolean insertTrack(String date, String coordinates, String transportation, String distance, String calories) {
+    public boolean insertTrack(String date, String coordinates, String transportation,
+                               String distance, String calories, String time) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put("date", date);
@@ -55,6 +59,7 @@ public class TrackDBHelper extends SQLiteOpenHelper {
         contentValues.put("transportation", transportation);
         contentValues.put("distance", distance);
         contentValues.put("calories", calories);
+        contentValues.put("time", time);
         db.insert("tracks", null, contentValues);
         return true;
     }
@@ -71,7 +76,8 @@ public class TrackDBHelper extends SQLiteOpenHelper {
         return numRows;
     }
 
-    public boolean updateTrack(Integer id, String date, String coordinates, String transportation, String distance, String calories) {
+    public boolean updateTrack(Integer id, String date, String coordinates, String transportation,
+                               String distance, String calories, String time) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put("date", date);
@@ -79,6 +85,7 @@ public class TrackDBHelper extends SQLiteOpenHelper {
         contentValues.put("transportation", transportation);
         contentValues.put("distance", distance);
         contentValues.put("calories", calories);
+        contentValues.put("time", time);
         db.update("tracks", contentValues, "id = ? ", new String[]{Integer.toString(id)});
         return true;
     }
@@ -99,7 +106,8 @@ public class TrackDBHelper extends SQLiteOpenHelper {
         res.moveToFirst();
 
         while (res.isAfterLast() == false) {
-            allTracks.put(res.getString(res.getColumnIndex(DATE)),(res.getInt(res.getColumnIndex(ID))));
+            allTracks.put(res.getString(res.getColumnIndex(DATE)) + " #" +
+                    (res.getInt(res.getColumnIndex(ID))), (res.getInt(res.getColumnIndex(ID))));
             res.moveToNext();
         }
         return allTracks;

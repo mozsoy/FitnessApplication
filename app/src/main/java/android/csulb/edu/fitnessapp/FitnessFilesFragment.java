@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.csulb.edu.fitnessapp.dummy.DummyContent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -26,21 +27,8 @@ import java.util.TreeMap;
  * interface.
  */
 public class FitnessFilesFragment extends ListFragment {
-    static final int READ_BLOCK_SIZE = 100;
-    private static final LatLng ATHERTON_BELLFLOWER = new LatLng(33.788542, -118.124377);
-    private static final LatLng ATHERTON_STUDEBAKER = new LatLng(33.788666, -118.099318);
-    private static final LatLng STUDEBAKER_7TH = new LatLng(33.774382, -118.103150);
-    private static final LatLng BELLFLOWER_7TH = new LatLng(33.775328, -118.121233);
-
-    private static final LatLng LIBRARY = new LatLng(33.777120, -118.114467);
-    private static final LatLng PARKING_STRUCTURE_2 = new LatLng(33.786153, -118.109437);
-
-    private static final LatLng PARKING_STRUCTURE_3 = new LatLng(33.787323, -118.109347);
-    private static final LatLng PYRAMID = new LatLng(33.787621, -118.114198);
-
     private ArrayList<String> itemList = new ArrayList<String>();
     TrackDBHelper mDBHelper;
-
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -112,7 +100,7 @@ public class FitnessFilesFragment extends ListFragment {
                 itemList.remove(position);
                 setListAdapter(new ArrayAdapter<String>(getActivity(),
                         android.R.layout.simple_list_item_1, android.R.id.text1, itemList));
-                Toast.makeText(getActivity(), "Track deleted", Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), "Track Deleted", Toast.LENGTH_LONG).show();
                 return true;
             }
         });
@@ -139,75 +127,34 @@ public class FitnessFilesFragment extends ListFragment {
     public void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
 
-        if (null != mListener) {
-            // Notify the active callbacks interface (the activity, if the
-            // fragment is attached to one) that an item has been selected.
-            mListener.onFitnessFileInteraction(DummyContent.ITEMS.get(position).id);
-        }
-
         // Construct pointList based on item clicked
         ArrayList<LatLng> pointList = new ArrayList<>();
         TextView txt = (TextView) v;
         String choice = txt.getText().toString();
-        /*if(choice.equals("5/6/2015")) {
-            pointList.add(ATHERTON_BELLFLOWER);
-            pointList.add(ATHERTON_STUDEBAKER);
-            pointList.add(STUDEBAKER_7TH);
-            pointList.add(BELLFLOWER_7TH);
-            pointList.add(ATHERTON_BELLFLOWER);
-        } else if(choice.equals("7/12/2015")) {
-            pointList.add(LIBRARY);
-            pointList.add(PARKING_STRUCTURE_2);
-        } else if(choice.equals("11/1/2015")) {
-            pointList.add(PARKING_STRUCTURE_3);
-            pointList.add(PYRAMID);
-        } else if(choice.equals("Read track from File")){
-            // read coordinates from file
-            try {
-                RandomAccessFile file = new RandomAccessFile("/data/user/0/android.csulb.edu.fitnessapp/files/track.txt","r");
-                // read size of coordinates array
-                int size = file.readInt();
-                LatLng[] coordinates = new LatLng[size];
-                // read coordinates one by one
-                for(int i = 0; i < size; i++) {
-                    double lat = file.readDouble();
-                    double lng = file.readDouble();
-                    coordinates[i] = new LatLng(lat, lng);
-                    System.out.println("Lat = " + lat + " lng = " + lng);
-                }
-                // Convert coordinates to pointList so can send to MapActivity
-                pointList = new ArrayList<LatLng>(Arrays.asList(coordinates));
-                file.close();
 
-                System.out.println("The size of the coordinates array is " + size);
-                Toast.makeText(getActivity(), "File loaded successfully!",
-                        Toast.LENGTH_SHORT).show();
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-        } */
-
-        // Get coordinates for the selected track from database
-        System.out.println(mDBHelper.getData(3).getColumnCount());
         Cursor resultSet = mDBHelper.getData(tracks.get(choice));
         resultSet.moveToFirst();
-        String coords = resultSet.getString(2);
-        System.out.println(coords);
+        String coords = resultSet.getString(resultSet.getColumnIndex(TrackDBHelper.COORDINATES));
+        String time = resultSet.getString(resultSet.getColumnIndex(TrackDBHelper.TIME));
+        String calories = resultSet.getString(resultSet.getColumnIndex(TrackDBHelper.CALORIES));
+        String transportation = resultSet.getString(resultSet.getColumnIndex(TrackDBHelper.TRANSPORTATION));
+        String distance = resultSet.getString(resultSet.getColumnIndex(TrackDBHelper.DISTANCE));
 
         String[] latlong = coords.split(",");
         for (int i = 0; i < latlong.length; i++) {
             System.out.println(latlong[i]);
         }
-        for (int i = 0; i < latlong.length / 2; i++) {
+        for (int i = 0; i < latlong.length; i+=2) {
             pointList.add(new LatLng(Double.parseDouble(latlong[i]), Double.parseDouble(latlong[i + 1])));
         }
         // When ListItem clicked, go back to MapActivity
         Intent intent = new Intent(getActivity(), MapActivity.class);
         // Pass ArrayList<LatLng>
         intent.putExtra("selectedTrack", pointList);
+        intent.putExtra("time", time);
+        intent.putExtra("calories", calories);
+        intent.putExtra("transportation", transportation);
+        intent.putExtra("distance", distance);
         startActivity(intent);
     }
 

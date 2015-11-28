@@ -131,8 +131,8 @@ public class GPSTracker extends Service implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
-        //wait for 3 location points before recording
-        if(gpsWait > 2) {
+        //wait for 2 location points before recording
+        if(gpsWait > 1) {
             LatLng point = new LatLng(location.getLatitude(), location.getLongitude());
             if (gpsCoordinates.size() > 1) {
                 line.setColor(Color.GREEN);
@@ -153,9 +153,7 @@ public class GPSTracker extends Service implements LocationListener {
 
     private void updateDistanceText(LatLng from, LatLng to) {
         float[] results = new float[1];
-        Log.d("coords", from.toString() + " " + to.toString());
         Location.distanceBetween(from.latitude, from.longitude, to.latitude, to.longitude, results);
-        Log.d("distance", String.valueOf(results[0]));
         mDistance.setText(String.valueOf(Float.parseFloat(mDistance.getText().toString())
                 + results[0]));
     }
