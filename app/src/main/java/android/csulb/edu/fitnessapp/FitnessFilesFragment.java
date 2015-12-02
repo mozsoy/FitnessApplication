@@ -144,9 +144,20 @@ public class FitnessFilesFragment extends ListFragment {
         for (int i = 0; i < latlong.length; i++) {
             System.out.println(latlong[i]);
         }
-        for (int i = 0; i < latlong.length; i+=2) {
-            pointList.add(new LatLng(Double.parseDouble(latlong[i]), Double.parseDouble(latlong[i + 1])));
+
+        try
+        {
+            for (int i = 0; i < latlong.length; i += 2)
+            {
+                pointList.add(new LatLng(Double.parseDouble(latlong[i]), Double.parseDouble(latlong[i + 1])));
+            }
         }
+        catch(NumberFormatException ex)
+        {
+            System.out.println("NumberFormatException occurred. latlong probably contained an empty string");
+            pointList = null;
+        }
+
         // When ListItem clicked, go back to MapActivity
         Intent intent = new Intent(getActivity(), MapActivity.class);
         // Pass ArrayList<LatLng>
