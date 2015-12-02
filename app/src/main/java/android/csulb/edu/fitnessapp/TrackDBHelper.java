@@ -17,7 +17,7 @@ import java.util.TreeMap;
 
 public class TrackDBHelper extends SQLiteOpenHelper {
 
-    public static final String DATABASE_NAME = "TrackDb";
+    public static final String DATABASE_NAME = "TracksDb";
     public static final String TABLE_NAME = "tracks";
     public static final String ID = "id";
     public static final String DATE = "date";

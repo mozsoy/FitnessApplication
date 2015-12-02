@@ -1,20 +1,19 @@
 package android.csulb.edu.fitnessapp;
 
 import android.app.Activity;
-import android.graphics.Color;
-import android.os.Bundle;
 import android.app.Fragment;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 
 import com.jjoe64.graphview.GraphView;
-import com.jjoe64.graphview.LegendRenderer;
-import com.jjoe64.graphview.ValueDependentColor;
-import com.jjoe64.graphview.series.BarGraphSeries;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
+
+import java.util.TreeMap;
 
 
 /**
@@ -38,8 +37,14 @@ public class FitnessChartFragment extends Fragment {
     private String mTime;
     private String mDistance;
     private String mCalories;
+    TreeMap<String, Integer> tracks;
+    LineGraphSeries<DataPoint> distances;
+    LineGraphSeries<DataPoint> calories;
 
     private OnFitnessChartListener mListener;
+
+    TrackDBHelper mDBHelper;
+
 
     /**
      * Use this factory method to create a new instance of
@@ -73,6 +78,8 @@ public class FitnessChartFragment extends Fragment {
             mTime = getArguments().getString(TIME);
             mDistance = getArguments().getString(DISTANCE);
             mCalories = getArguments().getString(CALORIES);
+
+            mDBHelper = new TrackDBHelper(getActivity());
         }
     }
 
@@ -80,34 +87,34 @@ public class FitnessChartFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-
         // init example series data
+        distances = new LineGraphSeries<DataPoint>();
+        calories = new LineGraphSeries<DataPoint>();
+        // read from data from database
+        TreeMap<String, Integer> allTracks = new TreeMap<>();
+        SQLiteDatabase db = mDBHelper.getReadableDatabase();
+        Cursor res = db.rawQuery("select * from tracks", null);
+        int count = res.getCount();
+        res.moveToFirst();
+        int i = 0;
+        while (res.isAfterLast() == false) {
+            calories.appendData(new DataPoint(i, res.getInt(res.getColumnIndex("calories"))), true, count);
+            distances.appendData(new DataPoint(i, res.getInt(res.getColumnIndex("distance"))), true, count);
+            i++;
+            res.moveToNext();
+        }
+
         View rootView = inflater.inflate(R.layout.fragment_fitness_chart, container, false);
 
         GraphView graph = (GraphView) rootView.findViewById(R.id.graph);
         GraphView graph2 = (GraphView) rootView.findViewById(R.id.graph2);
 
-        LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>(new DataPoint[] {
-                new DataPoint(0, 1),
-                new DataPoint(1, 5),
-                new DataPoint(2, 3),
-                new DataPoint(3, 2),
-                new DataPoint(4, 6)
-        });
-        graph.addSeries(series);
-
-        LineGraphSeries<DataPoint> series2 = new LineGraphSeries<DataPoint>(new DataPoint[] {
-                new DataPoint(0, 3),
-                new DataPoint(1, 3),
-                new DataPoint(2, 6),
-                new DataPoint(3, 2),
-                new DataPoint(4, 5)
-        });
-        graph2.addSeries(series2);
+        graph.addSeries(distances);
+        graph2.addSeries(calories);
 
         // legend
-        series.setTitle("Distance");
-        series2.setTitle("Calories");
+        distances.setTitle("Distance");
+        calories.setTitle("Calories");
         graph.getLegendRenderer().setVisible(true);
         //graph.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.BOTTOM);
         graph2.getLegendRenderer().setVisible(true);
