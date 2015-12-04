@@ -191,7 +191,8 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
     }
 
     @Override
-    public void onTabSelected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
+    public void onTabSelected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction)
+    {
         // When the given tab is selected, switch to the corresponding page in
         // the ViewPager.
         if (tab.getPosition() == 1) {
@@ -199,6 +200,7 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
             fcf.updateCharts();
         }
         mViewPager.setCurrentItem(tab.getPosition());
+
     }
 
     @Override
