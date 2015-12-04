@@ -86,10 +86,6 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
         today.setToNow();
         date = today.format("%k:%M:%S");
 
-        /*transportation = (TextView) findViewById(R.id.transportationSel);
-        distance = (TextView) findViewById(R.id.distanceVal);
-        calories = (TextView) findViewById(R.id.caloriesVal);*/
-
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mSectionsPagerAdapter = new SectionsPagerAdapter(getFragmentManager());
@@ -198,6 +194,10 @@ public class FitnessMainActivity extends Activity implements ActionBar.TabListen
     public void onTabSelected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
         // When the given tab is selected, switch to the corresponding page in
         // the ViewPager.
+        if (tab.getPosition() == 1) {
+            FitnessChartFragment fcf = (FitnessChartFragment) mSectionsPagerAdapter.getItem(1);
+            fcf.updateCharts();
+        }
         mViewPager.setCurrentItem(tab.getPosition());
     }
 

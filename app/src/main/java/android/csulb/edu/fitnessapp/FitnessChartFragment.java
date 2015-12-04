@@ -2,6 +2,7 @@ package android.csulb.edu.fitnessapp;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -34,7 +35,11 @@ public class FitnessChartFragment extends Fragment {
 
     private OnFitnessChartListener mListener;
 
-    TrackDBHelper mDBHelper;
+    static TrackDBHelper mDBHelper;
+    static Context mContext;
+
+    static GraphView graph;
+    static GraphView graph2;
 
     public static FitnessChartFragment newInstance(String param1, String param2, String param3) {
         FitnessChartFragment fragment = new FitnessChartFragment();
@@ -47,7 +52,6 @@ public class FitnessChartFragment extends Fragment {
     }
 
     public FitnessChartFragment() {
-        // Required empty public constructor
     }
 
     @Override
@@ -55,6 +59,7 @@ public class FitnessChartFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         if (getArguments() != null) {
+            mContext = getActivity();
             mTime = getArguments().getString(TIME);
             mDistance = getArguments().getString(DISTANCE);
             mCalories = getArguments().getString(CALORIES);
@@ -86,8 +91,8 @@ public class FitnessChartFragment extends Fragment {
 
         View rootView = inflater.inflate(R.layout.fragment_fitness_chart, container, false);
 
-        GraphView graph = (GraphView) rootView.findViewById(R.id.graph);
-        GraphView graph2 = (GraphView) rootView.findViewById(R.id.graph2);
+        graph = (GraphView) rootView.findViewById(R.id.graph);
+        graph2 = (GraphView) rootView.findViewById(R.id.graph2);
 
         distances.setDrawDataPoints(true);
         distances.setDataPointsRadius(20);
@@ -139,5 +144,48 @@ public class FitnessChartFragment extends Fragment {
 
     public interface OnFitnessChartListener {
         public void onFitnessChartInteraction(String text);
+    }
+
+    public static void updateCharts() {
+        LineGraphSeries<DataPoint> dist = new LineGraphSeries<DataPoint>();
+        LineGraphSeries<DataPoint> cal = new LineGraphSeries<DataPoint>();
+        TreeMap<String, Integer> allTracks = new TreeMap<>();
+        mDBHelper = new TrackDBHelper(mContext);
+        SQLiteDatabase db = mDBHelper.getReadableDatabase();
+
+        Cursor res = db.rawQuery("select * from tracks", null);
+        int count = res.getCount();
+        res.moveToFirst();
+        int i = 1;
+        while (res.isAfterLast() == false) {
+            cal.appendData(new DataPoint(i, res.getInt(res.getColumnIndex("calories"))), true, count);
+            dist.appendData(new DataPoint(i, res.getInt(res.getColumnIndex("distance"))), true, count);
+            i++;
+            res.moveToNext();
+        }
+
+        graph.removeAllSeries();
+        graph2.removeAllSeries();
+        dist.setDrawDataPoints(true);
+        dist.setDataPointsRadius(20);
+        dist.setThickness(10);
+        graph.addSeries(dist);
+
+        cal.setDrawDataPoints(true);
+        cal.setDataPointsRadius(20);
+        cal.setThickness(10);
+        graph2.addSeries(cal);
+
+        // legend
+        dist.setTitle("Distance");
+        cal.setTitle("Calories");
+
+        graph.getGridLabelRenderer().setVerticalAxisTitle("Distance (m)");
+        graph.getGridLabelRenderer().setHorizontalAxisTitle("Track #");
+        graph.getLegendRenderer().setVisible(true);
+
+        graph2.getGridLabelRenderer().setVerticalAxisTitle("Calories (cal)");
+        graph2.getGridLabelRenderer().setHorizontalAxisTitle("Track #");
+        graph2.getLegendRenderer().setVisible(true);
     }
 }
