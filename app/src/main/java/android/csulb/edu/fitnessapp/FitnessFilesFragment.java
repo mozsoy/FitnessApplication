@@ -19,30 +19,19 @@ import com.google.android.gms.maps.model.LatLng;
 import java.util.ArrayList;
 import java.util.TreeMap;
 
-/**
- * A fragment representing a list of Items.
- * <p/>
- * <p/>
- * Activities containing this fragment MUST implement the {@link android.csulb.edu.fitnessapp.FitnessFilesFragment.OnFitnessFileListener}
- * interface.
- */
 public class FitnessFilesFragment extends ListFragment {
     private ArrayList<String> itemList = new ArrayList<String>();
     TrackDBHelper mDBHelper;
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
-    // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
 
     private OnFitnessFileListener mListener;
     TreeMap<String, Integer> tracks;
 
-    // TODO: Rename and change types of parameters
     public static FitnessFilesFragment newInstance(String param1, String param2) {
         FitnessFilesFragment fragment = new FitnessFilesFragment();
         Bundle args = new Bundle();
@@ -52,10 +41,6 @@ public class FitnessFilesFragment extends ListFragment {
         return fragment;
     }
 
-    /**
-     * Mandatory empty constructor for the fragment manager to instantiate the
-     * fragment (e.g. upon screen orientation changes).
-     */
     public FitnessFilesFragment() {
     }
 
@@ -73,7 +58,6 @@ public class FitnessFilesFragment extends ListFragment {
         // Add track from database to list
         itemList.addAll(mDBHelper.getAllTracks().keySet());
 
-        // TODO: Change Adapter to display your content
         setListAdapter(new ArrayAdapter<String>(getActivity(),
                 android.R.layout.simple_list_item_1, android.R.id.text1, itemList));
     }
@@ -141,12 +125,13 @@ public class FitnessFilesFragment extends ListFragment {
         String distance = resultSet.getString(resultSet.getColumnIndex(TrackDBHelper.DISTANCE));
 
         String[] latlong = coords.split(",");
-        for (int i = 0; i < latlong.length; i++) {
-            System.out.println(latlong[i]);
-        }
-        for (int i = 0; i < latlong.length; i+=2) {
-            pointList.add(new LatLng(Double.parseDouble(latlong[i]), Double.parseDouble(latlong[i + 1])));
-        }
+
+        try {
+            for (int i = 0; i < latlong.length; i += 2) {
+                pointList.add(new LatLng(Double.parseDouble(latlong[i]), Double.parseDouble(latlong[i + 1])));
+            }
+        } catch(Exception e) { e.printStackTrace(); }
+
         // When ListItem clicked, go back to MapActivity
         Intent intent = new Intent(getActivity(), MapActivity.class);
         // Pass ArrayList<LatLng>
@@ -157,17 +142,6 @@ public class FitnessFilesFragment extends ListFragment {
         intent.putExtra("distance", distance);
         startActivity(intent);
     }
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
 
     public interface OnFitnessFileListener {
         public void onFitnessFileInteraction(String text);

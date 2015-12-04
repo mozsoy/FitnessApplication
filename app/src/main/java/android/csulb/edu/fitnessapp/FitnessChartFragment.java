@@ -8,32 +8,23 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
+import com.jjoe64.graphview.DefaultLabelFormatter;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
+import java.text.NumberFormat;
 import java.util.TreeMap;
 
-
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link android.csulb.edu.fitnessapp.FitnessChartFragment.OnFitnessChartListener} interface
- * to handle interaction events.
- * Use the {@link FitnessChartFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class FitnessChartFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String TIME = "Time";
     private static final String DISTANCE = "Distance";
     private static final String CALORIES = "Calories";
     private GraphView graphCalories;
     private GraphView graphDistance;
 
-    // TODO: Rename and change types of parameters
     private String mTime;
     private String mDistance;
     private String mCalories;
@@ -45,17 +36,6 @@ public class FitnessChartFragment extends Fragment {
 
     TrackDBHelper mDBHelper;
 
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @param param3 Parameter 3.
-     * @return A new instance of fragment FitnessChartFragment.
-     */
-    // TODO: Rename and change types and number of parameters
     public static FitnessChartFragment newInstance(String param1, String param2, String param3) {
         FitnessChartFragment fragment = new FitnessChartFragment();
         Bundle args = new Bundle();
@@ -96,7 +76,7 @@ public class FitnessChartFragment extends Fragment {
         Cursor res = db.rawQuery("select * from tracks", null);
         int count = res.getCount();
         res.moveToFirst();
-        int i = 0;
+        int i = 1;
         while (res.isAfterLast() == false) {
             calories.appendData(new DataPoint(i, res.getInt(res.getColumnIndex("calories"))), true, count);
             distances.appendData(new DataPoint(i, res.getInt(res.getColumnIndex("distance"))), true, count);
@@ -109,21 +89,31 @@ public class FitnessChartFragment extends Fragment {
         GraphView graph = (GraphView) rootView.findViewById(R.id.graph);
         GraphView graph2 = (GraphView) rootView.findViewById(R.id.graph2);
 
+        distances.setDrawDataPoints(true);
+        distances.setDataPointsRadius(20);
+        distances.setThickness(10);
         graph.addSeries(distances);
+
+        calories.setDrawDataPoints(true);
+        calories.setDataPointsRadius(20);
+        calories.setThickness(10);
         graph2.addSeries(calories);
 
         // legend
         distances.setTitle("Distance");
         calories.setTitle("Calories");
+
+        graph.getGridLabelRenderer().setVerticalAxisTitle("Distance (m)");
+        graph.getGridLabelRenderer().setHorizontalAxisTitle("Track #");
         graph.getLegendRenderer().setVisible(true);
-        //graph.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.BOTTOM);
+
+        graph2.getGridLabelRenderer().setVerticalAxisTitle("Calories (cal)");
+        graph2.getGridLabelRenderer().setHorizontalAxisTitle("Track #");
         graph2.getLegendRenderer().setVisible(true);
-        //graph2.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.BOTTOM);
 
         return rootView;
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
     public void onButtonPressed(String text) {
         if (mListener != null) {
             mListener.onFitnessChartInteraction(text);
@@ -147,18 +137,7 @@ public class FitnessChartFragment extends Fragment {
         mListener = null;
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
     public interface OnFitnessChartListener {
         public void onFitnessChartInteraction(String text);
     }
-
 }
